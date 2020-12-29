@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>恋じゃない出会い</title>
+ 
+
+ <link rel="stylesheet" href="./css/font-awesome.css">
+ <script type="text/javascript" src="./js/jquery.min.js"></script>
+	<style type="text/css">
+		/**{margin:0;padding:0;}*/
+		#canvas{
+			background-color:transparent;
+			overflow: hidden;
+			z-index: 1;
+			position: absolute;
+			/*border: 1px solid red;*/
+			left: 50%; top:47%;
+			transform: translate(-50%,-50%);
+			height: 75%;
+			background-image: url("./img/櫻井栞奈.png");
+			background-repeat: no-repeat;
+			background-size: 100%;
+		}
+
+		#play{
+			border-radius: 50%;
+			width: 55px; 
+			height: 55px;
+			cursor: pointer;
+			position: fixed;
+			border: none;
+			left: 13%;
+			bottom: 3%;
+			background-color: #e6e2e2;
+			outline: none;
+			transition: background-color 0.5s;
+			-moz-transition: background-color 0.5s;
+			-webkit-transition: background-color 0.5s;
+			-o-transition: background-color 0.5s;
+		}
+
+		#play:hover{
+			background-color: #c1c0c0;
+			transition: background-color 0.5s;
+			-moz-transition: background-color 0.5s;
+			-webkit-transition: background-color 0.5s;
+			-o-transition: background-color 0.5s;
+			/*box-shadow: 1px 1px 2px 2px ;
+			transition: box-shadow 0.5s;
+			-moz-transition: box-shadow 0.5s;
+			-webkit-transition: box-shadow 0.5s;
+			-o-transition: box-shadow 0.5s; */
+		}
+
+
+		#music{
+			display: none;
+		}
+
+		#text{
+			position: fixed;
+			/*left: 20%;*/
+			bottom: 4%;
+			width: 100%;
+			color: white;
+			font-weight: bold;
+			text-align: center;
+			/*border:1px solid red;*/
+			font-size: 24px;
+
+			display: none;
+
+
+			moz-user-select: -moz-none;
+			-moz-user-select: none;
+			-o-user-select: none;
+			-khtml-user-select: none;
+			-webkit-user-select: none;
+			-ms-user-select: none;
+			user-select: none;
+			
+		}
+
+		#tit{
+			width: 100%;
+			color:white;
+			text-align: center;
+			font-weight: 500;
+			font-size: 30px;
+		}
+		
+		body{
+			background-color: black;
+			width: 100%;
+			height: 100%;
+			font-family: Georgia, "游明朝", "Yu Mincho", "游明朝体", YuMincho, "ヒラギノ明朝 Pro", "Hiragino Mincho ProN", "MS P明朝", "MS PMincho", HGS明朝E, "MS Mincho", serif;
+		}
+
+	</style>
+</head>
+<body>
+	
+
+<!-- 
+	<div style = "z-index: -100">
+		<audio></audio> -->
+		<!-- <img src = "./櫻井栞奈.png" height= "80%" style = "position:absolute;z-index: -1; left: 50%; top:50%; transform: translate(-50%,-50%);"> -->
+	<!-- </div> -->
+	<div id = "tit"></div>
+
+	<!-- <div style = "color: red;border:1px solid red"> -->
+	<audio id = "music" controls="controls" src = "./sound/uta.mp3"></audio>
+	<!-- </div> -->
+
+	<canvas id = "canvas"></canvas>
+
+	<button id = "play" onclick = "start()">
+		<i class="fa fa-play fa-2x" style = "margin-left:5px;"aria-hidden="true"></i>
+	</button>
+
+	<span id = "text"></span>
+
+	<script type="text/javascript">
+
+		var width=window.innerWidth;
+		var height=window.innerHeight;
+		var canvas=document.querySelector("#canvas");
+		var context=canvas.getContext("2d");
+		var cnt = 0;
+		var text = document.getElementById("text");
+
+		var audio = document.getElementById('music');
+
+		var button = document.getElementById("play");
+
+		var idx = 0;
+
+		var t = [41, 47, 54, 59, 63, 72, 80, 84, 87, 91, 96, 100, 105, 109, 111, 116, 121, 125, 129, 141];
+
+		var times = [];
+
+		var all = [
+			"高い空 降る雪",
+			"高速（こうそく）ランプ 揺（ゆ）れる",
+			"すれ违う（ちがう） 人は",
+			"谁も速足（はやあし）",
+			"赈（にぎ）やかな音（おと） 奏（かな）でる",
+			"高いビル 见上げるの",
+			"障害灯（しょうがいとう）",
+			"赤く光る",
+			"騒（さわ）めき 足音（あしおと）",
+			"それは街の歌（うた）",
+			"响く（ひびく）",
+			"四季循环 往复",
+			"是你 与我",
+			"跟他 同生共存",
+			"まるで迷子（まいこ）の街",
+			"时代变迁 消散 ",
+			"泡沫 万物千景汤汤",
+			"あの日 覚えた",
+			"言葉（ことば）は ここに",
+			"いつまでも"
+		];
+
+
+		times[0] = t[0] - 0.2;
+
+		for(var i = 1; i < t.length; i ++)
+			times[i] = t[i] - t[i - 1] - 0.2;
+
+
+		for(var i = 0; i < times.length; i ++)
+			times[i] *= 1000;
+
+		// alert(times.length);
+
+		// alert(times);
+
+
+		var snowArray=[];
+ 
+		canvas.width=width;
+		canvas.height=height;
+ 
+		cartoon();   
+
+		class Snowflake{
+			constructor(){
+				this.init();
+			}
+			init(){
+				this.position={   
+					x:Math.random()*width,
+					y:Math.random()*height,
+				}
+				this.speed=Math.random()*1000 + 100;
+				this.r=Math.random()*6 + 5;
+				this.transparency=Math.random();
+				this.color={
+					r1:255,
+					g:255,
+					b:255,
+				}
+
+				this.ori = Math.random() < 0.3 ? 1 : -1;
+
+			}
+			draw(){
+				this.position.y += 1;
+				this.position.x += this.ori;
+				this.transparency-=0.005;
+				if(this.transparency<=0){
+					cnt ++;
+					if(cnt >= 50){
+						cnt -= 20;
+						this.init();
+					}
+				}
+				context.beginPath();
+
+				context.fillStyle="rgba("+this.color.r1+","+this.color.g+","+this.color.b+","+this.transparency+")";
+				context.arc(this.position.x,this.position.y,this.r,0,Math.PI*2);
+				context.fill();
+
+			}	
+		}
+ 
+		for(var i=0;i<30;i++){
+			var snow=new Snowflake();
+			snowArray.push(snow);
+		}
+
+		function cartoon(){
+			context.clearRect(0,0,width,height);
+			for(var j=0;j<snowArray.length;j++){
+				snowArray[j].draw();
+			}
+			requestAnimationFrame(cartoon);
+		}
+
+		function start(){
+			text.innerHTML = "都市之歌 ~街の歌~"
+			audio.currentTime = 0;
+			
+			$("#text").fadeIn(100);
+
+			// button.disabled = true;
+			$('#play').fadeOut(500);
+
+			audio.play();
+
+			setTimeout(show1, times[idx]);
+		}
+
+		function show1(){
+			$("#text").fadeOut(100, function(){
+				text.innerHTML = all[idx];
+				idx ++;
+				$("#text").fadeIn(100, function(){
+					setTimeout(show2, times[idx]);
+				});
+			});
+		}
+
+		function show2(){
+        	$("#text").fadeOut(100, function(){
+                text.innerHTML = all[idx];
+                idx ++;
+                $("#text").fadeIn(100, function(){
+                        setTimeout(show3, times[idx]);
+                });
+        	});
+		}
+
+		function show3(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show4, times[idx]);
+		                });
+		        });
+		}
+
+		function show4(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show5, times[idx]);
+		                });
+		        });
+		}
+
+		function show5(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show6, times[idx]);
+		                });
+		        });
+		}
+
+		function show6(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show7, times[idx]);
+		                });
+		        });
+		}
+
+		function show7(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show8, times[idx]);
+		                });
+		        });
+		}
+
+		function show8(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show9, times[idx]);
+		                });
+		        });
+		}
+
+		function show9(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show10, times[idx]);
+		                });
+		        });
+		}
+
+		function show10(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show11, times[idx]);
+		                });
+		        });
+		}
+
+		function show11(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show12, times[idx]);
+		                });
+		        });
+		}
+
+		function show12(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show13, times[idx]);
+		                });
+		        });
+		}
+
+		function show13(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show14, times[idx]);
+		                });
+		        });
+		}
+
+		function show14(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show15, times[idx]);
+		                });
+		        });
+		}
+
+		function show15(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show16, times[idx]);
+		                });
+		        });
+		}
+
+		function show16(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show17, times[idx]);
+		                });
+		        });
+		}
+
+		function show17(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show18, times[idx]);
+		                });
+		        });
+		}
+
+		function show18(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show19, times[idx]);
+		                });
+		        });
+		}
+
+		function show19(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        setTimeout(show20, times[idx]);
+		                });
+		        });
+		}
+
+		function show20(){
+		        $("#text").fadeOut(100, function(){
+		                text.innerHTML = all[idx];
+		                idx ++;
+		                $("#text").fadeIn(100, function(){
+		                        // setTimeout(show21, times[idx]);
+		                    setTimeout(function(){
+		                    	idx = 0;
+		                		$('#play').fadeIn(100);
+		                		$("#text").fadeOut();
+		                    }, (180 - t[t.length - 1]) * 1000);
+		                });
+		        });
+		}
+		// function show21(){
+		// 	$("#text").fadeOut(100, function(){
+		//                 text.innerHTML = all[idx];
+		//                 idx ++;
+		//                 $("#text").fadeIn(100, function(){
+		                	
+		//                 });
+		//         });
+		// }
+
+
+	</script>
+</body>
+</html>
